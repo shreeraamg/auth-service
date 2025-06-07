@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: auth-service
+  data:
+    mongodb:
+      uri: mongodb://root:example@localhost:27017/local?authSource=admin
+
+jwt:
+  secret: 9d7a8a3fbc6f74a2a7cd9dbe1c92a77a41b2cf13549642e82c8b70e06a9faecb
+  expiry: 86400
