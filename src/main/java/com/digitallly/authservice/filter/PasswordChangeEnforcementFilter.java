@@ -28,15 +28,10 @@ public class PasswordChangeEnforcementFilter extends OncePerRequestFilter {
             if (principal instanceof User user && !user.isPasswordChanged()) {
                 String path = request.getRequestURI();
 
-                if (path.equals("/api/auth/login")) {
-                    response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-                    response.setHeader("Location", "/api/auth/change-password");
-                    return;
-                }
-
                 if (!path.equals("/api/auth/change-password")) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
+                    response.setHeader("Location", "http://localhost:8080/api/auth/change-password");
                     response.getWriter().write("""
                                 {
                                   "error": "Password change required",

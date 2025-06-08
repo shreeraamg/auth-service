@@ -1,6 +1,7 @@
 package com.digitallly.authservice.service;
 
 import com.digitallly.authservice.domain.User;
+import com.digitallly.authservice.dto.ChangePasswordRequest;
 import com.digitallly.authservice.dto.UserDto;
 import com.digitallly.authservice.enums.UserRole;
 import com.digitallly.authservice.repository.UserRepository;
@@ -11,6 +12,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -84,6 +88,25 @@ public class AuthService {
         } catch (BadCredentialsException ex) {
             throw new BadCredentialsException("Invalid email or password");
         }
+    }
+
+    public void changePassword(ChangePasswordRequest request) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository
+                .findUserByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        boolean isEmailMatching = userDetails.getUsername().equals(request.getEmail());
+        boolean isPasswordMatching = encoder.matches(request.getOldPassword(), user.getPassword());
+
+        if (!isEmailMatching || !isPasswordMatching) {
+            throw new IllegalArgumentException("Invalid Credentials");
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        user.setPasswordChanged(true);
+
+        userRepository.save(user);
     }
 
 }
